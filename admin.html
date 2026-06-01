@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكم - TOP TECH</title><!-- ✏️ غير اسم المتجر هنا -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>* { font-family: 'Cairo', sans-serif; }</style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- LOGIN PAGE -->
+  <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-xl p-8 w-full max-w-sm">
+      <h1 class="text-3xl font-black text-gray-800 mb-2 text-center">⚙️ لوحة التحكم</h1>
+      <p class="text-gray-400 text-center mb-8">TOP TECH</p><!-- ✏️ غير اسم المتجر هنا -->
+      <input id="email-input" type="email" placeholder="الإيميل" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-800 font-bold focus:outline-none focus:border-blue-400 mb-3" />
+      <input id="password-input" type="password" placeholder="كلمة المرور" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-800 font-bold focus:outline-none focus:border-blue-400 mb-4" />
+      <p id="login-error" class="text-red-500 text-sm mb-3 hidden text-center">الإيميل أو كلمة المرور خاطئة!</p>
+      <div id="login-loading" class="hidden text-center mb-3">
+        <div class="inline-block w-6 h-6 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+      <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-2xl transition">دخول</button>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="admin-page" class="hidden">
+    <header class="bg-white shadow-sm sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <h1 class="text-xl font-black text-gray-800">⚙️ لوحة التحكم</h1>
+        <div class="flex gap-3">
+          <a href="index.html" target="_blank" class="text-sm bg-blue-50 text-blue-600 font-bold px-4 py-2 rounded-xl hover:bg-blue-100 transition">👁️ الموقع</a>
+          <button onclick="logout()" class="text-sm bg-red-50 text-red-500 font-bold px-4 py-2 rounded-xl hover:bg-red-100 transition">خروج</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 pt-6">
+      <div class="flex gap-3 mb-6">
+        <button onclick="showTab('products')" id="tab-products" class="tab-btn px-6 py-2 rounded-xl bg-blue-600 text-white font-bold">المنتجات</button>
+        <button onclick="showTab('categories')" id="tab-categories" class="tab-btn px-6 py-2 rounded-xl bg-white text-gray-600 font-bold border-2 border-gray-200">الأقسام</button>
+      </div>
+
+      <!-- PRODUCTS TAB -->
+      <div id="tab-products-content">
+        <div class="bg-white rounded-3xl shadow-sm p-6 mb-6">
+          <h2 id="form-title" class="text-xl font-black text-gray-800 mb-5">➕ إضافة منتج</h2>
+          <input type="hidden" id="edit-product-id" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="text-sm font-bold text-gray-600 mb-1 block">اسم المنتج *</label>
+              <input id="p-name" type="text" placeholder="مثال: Samsung Galaxy S24" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400" />
+            </div>
+            <div>
+              <label class="text-sm font-bold text-gray-600 mb-1 block">السعر (₪) *</label>
+              <input id="p-price" type="number" placeholder="مثال: 1500" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400" />
+            </div>
+            <div>
+              <label class="text-sm font-bold text-gray-600 mb-1 block">القسم *</label>
+              <select id="p-category" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400">
+                <option value="">اختر القسم</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm font-bold text-gray-600 mb-1 block">صورة المنتج</label>
+              <input id="p-image" type="file" accept="image/*" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400" />
+              <input id="p-image-url" type="hidden" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-sm font-bold text-gray-600 mb-1 block">الوصف</label>
+              <textarea id="p-desc" rows="3" placeholder="وصف المنتج..." class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400 resize-none"></textarea>
+            </div>
+            <div class="flex items-center gap-3">
+              <input id="p-available" type="checkbox" checked class="w-5 h-5 accent-blue-600" />
+              <label class="font-bold text-gray-700">متوفر للبيع</label>
+            </div>
+          </div>
+          <div id="upload-progress" class="hidden mb-3">
+            <div class="bg-gray-200 rounded-full h-2">
+              <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all" style="width:0%"></div>
+            </div>
+            <p class="text-sm text-gray-500 mt-1 text-center">جاري رفع الصورة...</p>
+          </div>
+          <p id="form-error" class="text-red-500 text-sm mb-3 hidden"></p>
+          <div class="flex gap-3">
+            <button onclick="saveProduct()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-2xl transition">💾 حفظ المنتج</button>
+            <button onclick="resetProductForm()" class="px-6 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3 rounded-2xl transition">إلغاء</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm p-6">
+          <h2 class="text-xl font-black text-gray-800 mb-5">📦 المنتجات</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b-2 border-gray-100">
+                  <th class="text-right text-sm font-bold text-gray-500 pb-3">الصورة</th>
+                  <th class="text-right text-sm font-bold text-gray-500 pb-3">الاسم</th>
+                  <th class="text-right text-sm font-bold text-gray-500 pb-3">السعر</th>
+                  <th class="text-right text-sm font-bold text-gray-500 pb-3">القسم</th>
+                  <th class="text-right text-sm font-bold text-gray-500 pb-3">الحالة</th>
+                  <th class="text-right text-sm font-bold text-gray-500 pb-3">خيارات</th>
+                </tr>
+              </thead>
+              <tbody id="products-table"></tbody>
+            </table>
+            <div id="products-loading" class="text-center py-10 text-gray-400">جاري التحميل...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORIES TAB -->
+      <div id="tab-categories-content" class="hidden">
+        <div class="bg-white rounded-3xl shadow-sm p-6 mb-6">
+          <h2 class="text-xl font-black text-gray-800 mb-5">➕ إضافة قسم</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="text-sm font-bold text-gray-600 mb-1 block">اسم القسم *</label>
+              <input id="c-name" type="text" placeholder="مثال: موبايلات" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400" />
+            </div>
+            <div>
+              <label class="text-sm font-bold text-gray-600 mb-1 block">صورة القسم</label>
+              <input id="c-image" type="file" accept="image/*" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400" />
+            </div>
+          </div>
+          <p id="cat-error" class="text-red-500 text-sm mb-3 hidden"></p>
+          <button onclick="saveCategory()" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-8 rounded-2xl transition">💾 حفظ القسم</button>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm p-6">
+          <h2 class="text-xl font-black text-gray-800 mb-5">📂 الأقسام</h2>
+          <div id="categories-table" class="space-y-3"></div>
+          <div id="cats-loading" class="text-center py-10 text-gray-400">جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+    <div class="pb-10"></div>
+  </div>
+
+  <script>
+    // =============================================
+    // ✏️ ضع بياناتك هنا
+    // =============================================
+    const SUPABASE_URL = 'https://pftmpwocntzcxbinfygb.supabase.co';       // ✏️ مثال: https://xxxx.supabase.co
+    const SUPABASE_KEY = 'sb_publishable_9btoyEEdz-9VtafZjFBBnw_MjOiYNRG';  // ✏️ المفتاح العام من Supabase
+    // =============================================
+
+    let authToken = null;
+
+    // ====== SUPABASE AUTH ======
+    async function login() {
+      const email = document.getElementById('email-input').value.trim();
+      const password = document.getElementById('password-input').value;
+      const errEl = document.getElementById('login-error');
+      const loadEl = document.getElementById('login-loading');
+
+      if (!email || !password) {
+        errEl.textContent = 'أدخل الإيميل وكلمة المرور!';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      errEl.classList.add('hidden');
+      loadEl.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.access_token) {
+          errEl.textContent = 'الإيميل أو كلمة المرور خاطئة!';
+          errEl.classList.remove('hidden');
+          loadEl.classList.add('hidden');
+          return;
+        }
+
+        authToken = data.access_token;
+        sessionStorage.setItem('sb_token', authToken);
+        showDashboard();
+
+      } catch(e) {
+        errEl.textContent = 'خطأ في الاتصال، حاول مجدداً';
+        errEl.classList.remove('hidden');
+        loadEl.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('password-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+
+    async function logout() {
+      try {
+        await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${authToken}` }
+        });
+      } catch(e) {}
+      authToken = null;
+      sessionStorage.removeItem('sb_token');
+      location.reload();
+    }
+
+    function showDashboard() {
+      document.getElementById('login-page').classList.add('hidden');
+      document.getElementById('admin-page').classList.remove('hidden');
+      loadProducts();
+      loadCategoriesSelect();
+    }
+
+    // تحقق من جلسة موجودة
+    const savedToken = sessionStorage.getItem('sb_token');
+    if (savedToken) {
+      authToken = savedToken;
+      showDashboard();
+    }
+
+    // ====== SUPABASE HELPERS ======
+    async function sbFetch(table, query = '', method = 'GET', body = null) {
+      const opts = {
+        method,
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${authToken}`,   // ← token الأدمن الحقيقي
+          'Content-Type': 'application/json',
+          'Prefer': method === 'POST' ? 'return=representation' : ''
+        }
+      };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, opts);
+      if (res.status === 401) { logout(); return null; }
+      if (res.status === 204) return null;
+      return res.json();
+    }
+
+    async function uploadImage(file, bucket = 'product-images') {
+      const ext = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${ext}`;
+      const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${fileName}`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${authToken}`,   // ← token الأدمن
+          'Content-Type': file.type
+        },
+        body: file
+      });
+      if (!res.ok) throw new Error('فشل رفع الصورة');
+      return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${fileName}`;
+    }
+
+    // ====== TABS ======
+    function showTab(tab) {
+      ['products', 'categories'].forEach(t => {
+        document.getElementById(`tab-${t}-content`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).className = 'tab-btn px-6 py-2 rounded-xl bg-white text-gray-600 font-bold border-2 border-gray-200';
+      });
+      document.getElementById(`tab-${tab}-content`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).className = 'tab-btn px-6 py-2 rounded-xl bg-blue-600 text-white font-bold';
+      if (tab === 'categories') loadCategoriesList();
+    }
+
+    // ====== PRODUCTS ======
+    async function loadProducts() {
+      document.getElementById('products-loading').classList.remove('hidden');
+      const products = await sbFetch('products', '?select=*,categories(name)&order=created_at.desc');
+      document.getElementById('products-loading').classList.add('hidden');
+      const tbody = document.getElementById('products-table');
+      if (!products?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-10">لا توجد منتجات</td></tr>'; return; }
+      tbody.innerHTML = products.map(p => `
+        <tr class="border-b border-gray-50 hover:bg-gray-50">
+          <td class="py-3"><img src="${p.image_url || 'https://via.placeholder.com/50?text=📦'}" class="w-12 h-12 rounded-xl object-cover" /></td>
+          <td class="py-3 font-bold text-gray-800 max-w-xs">${p.name}</td>
+          <td class="py-3 text-blue-600 font-black">${p.price} ₪</td>
+          <td class="py-3 text-gray-500 text-sm">${p.categories?.name || '-'}</td>
+          <td class="py-3">
+            <span class="px-3 py-1 rounded-full text-xs font-bold ${p.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'}">
+              ${p.available ? 'متوفر' : 'غير متوفر'}
+            </span>
+          </td>
+          <td class="py-3">
+            <div class="flex gap-2">
+              <button onclick='editProduct(${JSON.stringify(p).replace(/'/g, "&#39;")})' class="text-blue-600 hover:text-blue-800 font-bold text-sm bg-blue-50 px-3 py-1 rounded-lg">تعديل</button>
+              <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:text-red-700 font-bold text-sm bg-red-50 px-3 py-1 rounded-lg">حذف</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    async function loadCategoriesSelect() {
+      const cats = await sbFetch('categories', '?order=name');
+      const sel = document.getElementById('p-category');
+      sel.innerHTML = '<option value="">اختر القسم</option>';
+      cats?.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+    }
+
+    async function saveProduct() {
+      const name = document.getElementById('p-name').value.trim();
+      const price = document.getElementById('p-price').value;
+      const catId = document.getElementById('p-category').value;
+      const desc = document.getElementById('p-desc').value.trim();
+      const available = document.getElementById('p-available').checked;
+      const imageFile = document.getElementById('p-image').files[0];
+      const editId = document.getElementById('edit-product-id').value;
+      const errEl = document.getElementById('form-error');
+
+      if (!name || !price || !catId) {
+        errEl.textContent = 'الاسم والسعر والقسم مطلوبة!';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      errEl.classList.add('hidden');
+
+      let imageUrl = document.getElementById('p-image-url').value;
+
+      if (imageFile) {
+        document.getElementById('upload-progress').classList.remove('hidden');
+        document.getElementById('progress-bar').style.width = '50%';
+        try {
+          imageUrl = await uploadImage(imageFile);
+          document.getElementById('progress-bar').style.width = '100%';
+        } catch(e) {
+          errEl.textContent = 'فشل رفع الصورة، حاول مجدداً';
+          errEl.classList.remove('hidden');
+          document.getElementById('upload-progress').classList.add('hidden');
+          return;
+        }
+      }
+
+      const data = { name, price: parseFloat(price), category_id: parseInt(catId), description: desc, available, image_url: imageUrl };
+
+      if (editId) {
+        await sbFetch('products', `?id=eq.${editId}`, 'PATCH', data);
+      } else {
+        await sbFetch('products', '', 'POST', data);
+      }
+
+      document.getElementById('upload-progress').classList.add('hidden');
+      resetProductForm();
+      loadProducts();
+    }
+
+    function editProduct(p) {
+      document.getElementById('form-title').textContent = '✏️ تعديل المنتج';
+      document.getElementById('edit-product-id').value = p.id;
+      document.getElementById('p-name').value = p.name;
+      document.getElementById('p-price').value = p.price;
+      document.getElementById('p-desc').value = p.description || '';
+      document.getElementById('p-category').value = p.category_id;
+      document.getElementById('p-available').checked = p.available;
+      document.getElementById('p-image-url').value = p.image_url || '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+      await sbFetch('products', `?id=eq.${id}`, 'DELETE');
+      loadProducts();
+    }
+
+    function resetProductForm() {
+      document.getElementById('form-title').textContent = '➕ إضافة منتج';
+      document.getElementById('edit-product-id').value = '';
+      document.getElementById('p-name').value = '';
+      document.getElementById('p-price').value = '';
+      document.getElementById('p-desc').value = '';
+      document.getElementById('p-category').value = '';
+      document.getElementById('p-available').checked = true;
+      document.getElementById('p-image').value = '';
+      document.getElementById('p-image-url').value = '';
+      document.getElementById('form-error').classList.add('hidden');
+    }
+
+    // ====== CATEGORIES ======
+    async function loadCategoriesList() {
+      document.getElementById('cats-loading').classList.remove('hidden');
+      const cats = await sbFetch('categories', '?order=name');
+      document.getElementById('cats-loading').classList.add('hidden');
+      const container = document.getElementById('categories-table');
+      if (!cats?.length) { container.innerHTML = '<p class="text-center text-gray-400 py-10">لا توجد أقسام</p>'; return; }
+      container.innerHTML = cats.map(c => `
+        <div class="flex items-center gap-4 bg-gray-50 rounded-2xl p-4">
+          <img src="${c.image_url || 'https://via.placeholder.com/50?text=📂'}" class="w-14 h-14 rounded-xl object-cover" />
+          <div class="flex-1">
+            <p class="font-black text-gray-800 text-lg">${c.name}</p>
+          </div>
+          <button onclick="deleteCategory(${c.id})" class="text-red-500 hover:text-red-700 font-bold text-sm bg-red-50 px-4 py-2 rounded-xl">حذف</button>
+        </div>`).join('');
+    }
+
+    async function saveCategory() {
+      const name = document.getElementById('c-name').value.trim();
+      const imageFile = document.getElementById('c-image').files[0];
+      const errEl = document.getElementById('cat-error');
+
+      if (!name) {
+        errEl.textContent = 'اسم القسم مطلوب!';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      errEl.classList.add('hidden');
+
+      let imageUrl = '';
+      if (imageFile) {
+        try { imageUrl = await uploadImage(imageFile); }
+        catch(e) { errEl.textContent = 'فشل رفع الصورة'; errEl.classList.remove('hidden'); return; }
+      }
+
+      await sbFetch('categories', '', 'POST', { name, image_url: imageUrl });
+      document.getElementById('c-name').value = '';
+      document.getElementById('c-image').value = '';
+      loadCategoriesList();
+      loadCategoriesSelect();
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm('هل أنت متأكد؟ سيتم حذف القسم وكل منتجاته!')) return;
+      await sbFetch('products', `?category_id=eq.${id}`, 'DELETE');
+      await sbFetch('categories', `?id=eq.${id}`, 'DELETE');
+      loadCategoriesList();
+      loadProducts();
+    }
+  </script>
+</body>
+</html>
