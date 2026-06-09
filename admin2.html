@@ -3,23 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة التحكم - TOP TECH</title><!-- ✏️ غير اسم المتجر هنا -->
+  <title>لوحة التحكم - TOP TECH</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
   <style>* { font-family: 'Cairo', sans-serif; }</style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
+  <!-- نافذة تأكيد الحذف -->
+  <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm text-center">
+      <div class="text-5xl mb-3">⚠️</div>
+      <h3 class="text-xl font-black text-gray-800 mb-2" id="confirm-title">هل أنت متأكد؟</h3>
+      <p class="text-gray-500 mb-6" id="confirm-msg">لا يمكن التراجع عن هذا الإجراء</p>
+      <div class="flex gap-3">
+        <button id="confirm-yes" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-black py-3 rounded-2xl transition">نعم، احذف</button>
+        <button onclick="closeConfirm()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-2xl transition">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
   <!-- LOGIN PAGE -->
   <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-xl p-8 w-full max-w-sm">
       <h1 class="text-3xl font-black text-gray-800 mb-2 text-center">⚙️ لوحة التحكم</h1>
-      <p class="text-gray-400 text-center mb-8">TOP TECH</p><!-- ✏️ غير اسم المتجر هنا -->
+      <p class="text-gray-400 text-center mb-8">TOP TECH</p>
       <input id="email-input" type="email" placeholder="الإيميل" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-800 font-bold focus:outline-none focus:border-blue-400 mb-3" />
       <input id="password-input" type="password" placeholder="كلمة المرور" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-800 font-bold focus:outline-none focus:border-blue-400 mb-4" />
       <p id="login-error" class="text-red-500 text-sm mb-3 hidden text-center">الإيميل أو كلمة المرور خاطئة!</p>
       <div id="login-loading" class="hidden text-center mb-3">
-        <div class="inline-block w-6 h-6 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <div class="inline-block w-6 h-6 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
       </div>
       <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-2xl transition">دخول</button>
     </div>
@@ -38,9 +51,10 @@
     </header>
 
     <div class="max-w-7xl mx-auto px-4 pt-6">
-      <div class="flex gap-3 mb-6">
+      <div class="flex gap-3 mb-6 flex-wrap">
         <button onclick="showTab('products')" id="tab-products" class="tab-btn px-6 py-2 rounded-xl bg-blue-600 text-white font-bold">المنتجات</button>
         <button onclick="showTab('categories')" id="tab-categories" class="tab-btn px-6 py-2 rounded-xl bg-white text-gray-600 font-bold border-2 border-gray-200">الأقسام</button>
+        <button onclick="showTab('settings')" id="tab-settings" class="tab-btn px-6 py-2 rounded-xl bg-white text-gray-600 font-bold border-2 border-gray-200">⚙️ الإعدادات</button>
       </div>
 
       <!-- PRODUCTS TAB -->
@@ -48,6 +62,7 @@
         <div class="bg-white rounded-3xl shadow-sm p-6 mb-6">
           <h2 id="form-title" class="text-xl font-black text-gray-800 mb-5">➕ إضافة منتج</h2>
           <input type="hidden" id="edit-product-id" />
+          <input type="hidden" id="edit-product-old-image" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="text-sm font-bold text-gray-600 mb-1 block">اسم المنتج *</label>
@@ -58,26 +73,25 @@
               <input id="p-price" type="number" placeholder="مثال: 1500" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400" />
             </div>
             <div>
+              <label class="text-sm font-bold text-gray-600 mb-1 block">سعر الجملة (₪)</label>
+              <input id="p-wholesale-price" type="number" placeholder="مثال: 1200" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400" />
+            </div>
+            <div>
               <label class="text-sm font-bold text-gray-600 mb-1 block">القسم *</label>
               <select id="p-category" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400">
                 <option value="">اختر القسم</option>
               </select>
             </div>
-            <div>
+            <div class="md:col-span-2">
               <label class="text-sm font-bold text-gray-600 mb-1 block">صورة المنتج</label>
-              <!-- زر اختيار صورة أو تصوير مباشر -->
               <div class="flex gap-2 mb-2">
                 <button type="button" onclick="document.getElementById('p-image-gallery').click()" class="flex-1 border-2 border-gray-200 rounded-2xl px-3 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 transition flex items-center justify-center gap-1">🖼️ من المعرض</button>
                 <button type="button" onclick="document.getElementById('p-image-camera').click()" class="flex-1 border-2 border-blue-200 rounded-2xl px-3 py-2 text-sm font-bold text-blue-600 hover:bg-blue-50 transition flex items-center justify-center gap-1">📷 تصوير</button>
               </div>
-              <!-- input المعرض -->
               <input id="p-image-gallery" type="file" accept="image/*" class="hidden" onchange="handleImageSelect(this)" />
-              <!-- input الكاميرا -->
               <input id="p-image-camera" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(this)" />
-              <!-- input مشترك للنموذج القديم -->
               <input id="p-image" type="file" accept="image/*" class="hidden" />
               <input id="p-image-url" type="hidden" />
-              <!-- معاينة الصورة -->
               <div id="p-image-preview" class="hidden mt-2 relative">
                 <img id="p-image-preview-img" src="" class="w-full h-36 object-cover rounded-2xl border-2 border-blue-200" />
                 <button type="button" onclick="clearImagePreview()" class="absolute top-2 left-2 bg-red-500 text-white rounded-full w-7 h-7 text-xs font-black flex items-center justify-center">✕</button>
@@ -115,6 +129,7 @@
                   <th class="text-right text-sm font-bold text-gray-500 pb-3">الصورة</th>
                   <th class="text-right text-sm font-bold text-gray-500 pb-3">الاسم</th>
                   <th class="text-right text-sm font-bold text-gray-500 pb-3">السعر</th>
+                  <th class="text-right text-sm font-bold text-gray-500 pb-3">سعر الجملة</th>
                   <th class="text-right text-sm font-bold text-gray-500 pb-3">القسم</th>
                   <th class="text-right text-sm font-bold text-gray-500 pb-3">الحالة</th>
                   <th class="text-right text-sm font-bold text-gray-500 pb-3">خيارات</th>
@@ -162,21 +177,34 @@
           <div id="cats-loading" class="text-center py-10 text-gray-400">جاري التحميل...</div>
         </div>
       </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="tab-settings-content" class="hidden">
+        <div class="bg-white rounded-3xl shadow-sm p-6 mb-6">
+          <h2 class="text-xl font-black text-gray-800 mb-2">🔑 كلمة سر تجار الجملة</h2>
+          <p class="text-gray-400 text-sm mb-5">التجار يدخلون هذه الكلمة في المتجر لرؤية أسعار الجملة</p>
+          <div class="flex gap-3 items-end">
+            <div class="flex-1">
+              <label class="text-sm font-bold text-gray-600 mb-1 block">كلمة السر الحالية</label>
+              <input id="wholesale-pass-input" type="text" placeholder="أدخل كلمة السر الجديدة" class="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-400" />
+            </div>
+            <button onclick="saveWholesalePassword()" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-6 rounded-2xl transition whitespace-nowrap">💾 حفظ</button>
+          </div>
+          <p id="settings-msg" class="hidden mt-3 text-sm font-bold"></p>
+        </div>
+      </div>
+
     </div>
     <div class="pb-10"></div>
   </div>
 
   <script>
-    // =============================================
-    // ✏️ ضع بياناتك هنا
-    // =============================================
-    const SUPABASE_URL = 'https://pftmpwocntzcxbinfygb.supabase.co';       // ✏️ مثال: https://xxxx.supabase.co
-    const SUPABASE_KEY = 'sb_publishable_9btoyEEdz-9VtafZjFBBnw_MjOiYNRG';  // ✏️ المفتاح العام من Supabase
-    // =============================================
+    const SUPABASE_URL = 'https://pftmpwocntzcxbinfygb.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_9btoyEEdz-9VtafZjFBBnw_MjOiYNRG';
 
     let authToken = null;
 
-    // ====== SUPABASE AUTH ======
+    // ====== AUTH ======
     async function login() {
       const email = document.getElementById('email-input').value.trim();
       const password = document.getElementById('password-input').value;
@@ -188,33 +216,25 @@
         errEl.classList.remove('hidden');
         return;
       }
-
       errEl.classList.add('hidden');
       loadEl.classList.remove('hidden');
 
       try {
         const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
           method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
-
         const data = await res.json();
-
         if (!res.ok || !data.access_token) {
           errEl.textContent = 'الإيميل أو كلمة المرور خاطئة!';
           errEl.classList.remove('hidden');
           loadEl.classList.add('hidden');
           return;
         }
-
         authToken = data.access_token;
         sessionStorage.setItem('sb_token', authToken);
         showDashboard();
-
       } catch(e) {
         errEl.textContent = 'خطأ في الاتصال، حاول مجدداً';
         errEl.classList.remove('hidden');
@@ -245,12 +265,8 @@
       loadCategoriesSelect();
     }
 
-    // تحقق من جلسة موجودة
     const savedToken = sessionStorage.getItem('sb_token');
-    if (savedToken) {
-      authToken = savedToken;
-      showDashboard();
-    }
+    if (savedToken) { authToken = savedToken; showDashboard(); }
 
     // ====== SUPABASE HELPERS ======
     async function sbFetch(table, query = '', method = 'GET', body = null) {
@@ -258,7 +274,7 @@
         method,
         headers: {
           'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${authToken}`,   // ← token الأدمن الحقيقي
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
           'Prefer': method === 'POST' ? 'return=representation' : ''
         }
@@ -270,9 +286,49 @@
       return res.json();
     }
 
-    // ====== IMAGE RESIZE & PREVIEW ======
+    // ====== حذف صورة من Storage ======
+    async function deleteImageFromStorage(imageUrl) {
+      if (!imageUrl) return;
+      try {
+        // استخرج اسم الملف من الرابط
+        const parts = imageUrl.split('/product-images/');
+        if (parts.length < 2) return;
+        const fileName = parts[1];
+        await fetch(`${SUPABASE_URL}/storage/v1/object/product-images/${fileName}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+      } catch(e) {
+        console.warn('تعذر حذف الصورة من التخزين:', e);
+      }
+    }
 
-    // ضغط الصورة باستخدام Canvas
+    // ====== نافذة التأكيد ======
+    let confirmCallback = null;
+
+    function showConfirm(title, msg, callback) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-msg').textContent = msg;
+      confirmCallback = callback;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+      document.getElementById('confirm-modal').classList.add('flex');
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      document.getElementById('confirm-modal').classList.remove('flex');
+      confirmCallback = null;
+    }
+
+    document.getElementById('confirm-yes').addEventListener('click', () => {
+      if (confirmCallback) confirmCallback();
+      closeConfirm();
+    });
+
+    // ====== IMAGE HELPERS ======
     function compressImage(file, maxWidth = 1000, maxHeight = 1000, quality = 0.82) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -280,7 +336,6 @@
           const img = new Image();
           img.onload = () => {
             let { width, height } = img;
-            // حساب الأبعاد الجديدة مع الحفاظ على النسبة
             if (width > maxWidth || height > maxHeight) {
               const ratio = Math.min(maxWidth / width, maxHeight / height);
               width = Math.round(width * ratio);
@@ -291,7 +346,6 @@
             canvas.height = height;
             canvas.getContext('2d').drawImage(img, 0, 0, width, height);
             canvas.toBlob((blob) => {
-              // نحوّل الـ blob لـ File محافظين على اسم الملف
               resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
             }, 'image/jpeg', quality);
           };
@@ -301,7 +355,6 @@
       });
     }
 
-    // متغيرات لتخزين الملفات المضغوطة
     let selectedProductFile = null;
     let selectedCatFile = null;
 
@@ -312,8 +365,6 @@
       const compressed = await compressImage(file);
       const compressedKB = Math.round(compressed.size / 1024);
       selectedProductFile = compressed;
-
-      // عرض المعاينة
       const reader = new FileReader();
       reader.onload = (e) => {
         document.getElementById('p-image-preview-img').src = e.target.result;
@@ -331,7 +382,6 @@
       const compressed = await compressImage(file, 800, 800);
       const compressedKB = Math.round(compressed.size / 1024);
       selectedCatFile = compressed;
-
       const reader = new FileReader();
       reader.onload = (e) => {
         document.getElementById('c-image-preview-img').src = e.target.result;
@@ -365,7 +415,7 @@
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${authToken}`,   // ← token الأدمن
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': file.type
         },
         body: file
@@ -376,13 +426,14 @@
 
     // ====== TABS ======
     function showTab(tab) {
-      ['products', 'categories'].forEach(t => {
+      ['products', 'categories', 'settings'].forEach(t => {
         document.getElementById(`tab-${t}-content`).classList.add('hidden');
         document.getElementById(`tab-${t}`).className = 'tab-btn px-6 py-2 rounded-xl bg-white text-gray-600 font-bold border-2 border-gray-200';
       });
       document.getElementById(`tab-${tab}-content`).classList.remove('hidden');
       document.getElementById(`tab-${tab}`).className = 'tab-btn px-6 py-2 rounded-xl bg-blue-600 text-white font-bold';
       if (tab === 'categories') loadCategoriesList();
+      if (tab === 'settings') loadWholesalePassword();
     }
 
     // ====== PRODUCTS ======
@@ -391,12 +442,16 @@
       const products = await sbFetch('products', '?select=*,categories(name)&order=created_at.desc');
       document.getElementById('products-loading').classList.add('hidden');
       const tbody = document.getElementById('products-table');
-      if (!products?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-10">لا توجد منتجات</td></tr>'; return; }
+      if (!products?.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 py-10">لا توجد منتجات</td></tr>';
+        return;
+      }
       tbody.innerHTML = products.map(p => `
         <tr class="border-b border-gray-50 hover:bg-gray-50">
           <td class="py-3"><img src="${p.image_url || 'https://via.placeholder.com/50?text=📦'}" class="w-12 h-12 rounded-xl object-cover" /></td>
           <td class="py-3 font-bold text-gray-800 max-w-xs">${p.name}</td>
           <td class="py-3 text-blue-600 font-black">${p.price} ₪</td>
+          <td class="py-3 text-orange-500 font-black">${p.wholesale_price ? p.wholesale_price + ' ₪' : '<span class="text-gray-300 text-sm">—</span>'}</td>
           <td class="py-3 text-gray-500 text-sm">${p.categories?.name || '-'}</td>
           <td class="py-3">
             <span class="px-3 py-1 rounded-full text-xs font-bold ${p.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'}">
@@ -406,7 +461,7 @@
           <td class="py-3">
             <div class="flex gap-2">
               <button onclick='editProduct(${JSON.stringify(p).replace(/'/g, "&#39;")})' class="text-blue-600 hover:text-blue-800 font-bold text-sm bg-blue-50 px-3 py-1 rounded-lg">تعديل</button>
-              <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:text-red-700 font-bold text-sm bg-red-50 px-3 py-1 rounded-lg">حذف</button>
+              <button onclick="confirmDeleteProduct(${p.id}, '${(p.image_url || '').replace(/'/g, '')}')" class="text-red-500 hover:text-red-700 font-bold text-sm bg-red-50 px-3 py-1 rounded-lg">حذف</button>
             </div>
           </td>
         </tr>`).join('');
@@ -422,11 +477,13 @@
     async function saveProduct() {
       const name = document.getElementById('p-name').value.trim();
       const price = document.getElementById('p-price').value;
+      const wholesalePrice = document.getElementById('p-wholesale-price').value;
       const catId = document.getElementById('p-category').value;
       const desc = document.getElementById('p-desc').value.trim();
       const available = document.getElementById('p-available').checked;
       const imageFile = selectedProductFile;
       const editId = document.getElementById('edit-product-id').value;
+      const oldImageUrl = document.getElementById('edit-product-old-image').value;
       const errEl = document.getElementById('form-error');
 
       if (!name || !price || !catId) {
@@ -442,6 +499,10 @@
         document.getElementById('upload-progress').classList.remove('hidden');
         document.getElementById('progress-bar').style.width = '50%';
         try {
+          // حذف الصورة القديمة إذا كان تعديلاً
+          if (editId && oldImageUrl) {
+            await deleteImageFromStorage(oldImageUrl);
+          }
           imageUrl = await uploadImage(imageFile);
           document.getElementById('progress-bar').style.width = '100%';
         } catch(e) {
@@ -452,7 +513,15 @@
         }
       }
 
-      const data = { name, price: parseFloat(price), category_id: parseInt(catId), description: desc, available, image_url: imageUrl };
+      const data = {
+        name,
+        price: parseFloat(price),
+        wholesale_price: wholesalePrice ? parseFloat(wholesalePrice) : null,
+        category_id: parseInt(catId),
+        description: desc,
+        available,
+        image_url: imageUrl
+      };
 
       if (editId) {
         await sbFetch('products', `?id=eq.${editId}`, 'PATCH', data);
@@ -468,26 +537,42 @@
     function editProduct(p) {
       document.getElementById('form-title').textContent = '✏️ تعديل المنتج';
       document.getElementById('edit-product-id').value = p.id;
+      document.getElementById('edit-product-old-image').value = p.image_url || '';
       document.getElementById('p-name').value = p.name;
       document.getElementById('p-price').value = p.price;
+      document.getElementById('p-wholesale-price').value = p.wholesale_price || '';
       document.getElementById('p-desc').value = p.description || '';
       document.getElementById('p-category').value = p.category_id;
       document.getElementById('p-available').checked = p.available;
       document.getElementById('p-image-url').value = p.image_url || '';
+      // عرض الصورة الحالية في المعاينة
+      if (p.image_url) {
+        document.getElementById('p-image-preview-img').src = p.image_url;
+        document.getElementById('p-image-preview').classList.remove('hidden');
+        document.getElementById('p-image-size-info').textContent = 'الصورة الحالية';
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    async function deleteProduct(id) {
-      if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
-      await sbFetch('products', `?id=eq.${id}`, 'DELETE');
-      loadProducts();
+    function confirmDeleteProduct(id, imageUrl) {
+      showConfirm(
+        'حذف المنتج',
+        'سيتم حذف المنتج وصورته نهائياً. لا يمكن التراجع!',
+        async () => {
+          await deleteImageFromStorage(imageUrl);
+          await sbFetch('products', `?id=eq.${id}`, 'DELETE');
+          loadProducts();
+        }
+      );
     }
 
     function resetProductForm() {
       document.getElementById('form-title').textContent = '➕ إضافة منتج';
       document.getElementById('edit-product-id').value = '';
+      document.getElementById('edit-product-old-image').value = '';
       document.getElementById('p-name').value = '';
       document.getElementById('p-price').value = '';
+      document.getElementById('p-wholesale-price').value = '';
       document.getElementById('p-desc').value = '';
       document.getElementById('p-category').value = '';
       document.getElementById('p-available').checked = true;
@@ -503,14 +588,17 @@
       const cats = await sbFetch('categories', '?order=name');
       document.getElementById('cats-loading').classList.add('hidden');
       const container = document.getElementById('categories-table');
-      if (!cats?.length) { container.innerHTML = '<p class="text-center text-gray-400 py-10">لا توجد أقسام</p>'; return; }
+      if (!cats?.length) {
+        container.innerHTML = '<p class="text-center text-gray-400 py-10">لا توجد أقسام</p>';
+        return;
+      }
       container.innerHTML = cats.map(c => `
         <div class="flex items-center gap-4 bg-gray-50 rounded-2xl p-4">
           <img src="${c.image_url || 'https://via.placeholder.com/50?text=📂'}" class="w-14 h-14 rounded-xl object-cover" />
           <div class="flex-1">
             <p class="font-black text-gray-800 text-lg">${c.name}</p>
           </div>
-          <button onclick="deleteCategory(${c.id})" class="text-red-500 hover:text-red-700 font-bold text-sm bg-red-50 px-4 py-2 rounded-xl">حذف</button>
+          <button onclick="confirmDeleteCategory(${c.id}, '${(c.image_url || '').replace(/'/g, '')}')" class="text-red-500 hover:text-red-700 font-bold text-sm bg-red-50 px-4 py-2 rounded-xl">حذف</button>
         </div>`).join('');
     }
 
@@ -539,12 +627,51 @@
       loadCategoriesSelect();
     }
 
-    async function deleteCategory(id) {
-      if (!confirm('هل أنت متأكد؟ سيتم حذف القسم وكل منتجاته!')) return;
-      await sbFetch('products', `?category_id=eq.${id}`, 'DELETE');
-      await sbFetch('categories', `?id=eq.${id}`, 'DELETE');
-      loadCategoriesList();
-      loadProducts();
+    function confirmDeleteCategory(id, imageUrl) {
+      showConfirm(
+        'حذف القسم',
+        'سيتم حذف القسم وجميع منتجاته وصورهم نهائياً!',
+        async () => {
+          // جلب منتجات القسم لحذف صورها
+          const products = await sbFetch('products', `?category_id=eq.${id}&select=image_url`);
+          if (products?.length) {
+            for (const p of products) {
+              await deleteImageFromStorage(p.image_url);
+            }
+          }
+          // حذف صورة القسم
+          await deleteImageFromStorage(imageUrl);
+          // حذف المنتجات والقسم
+          await sbFetch('products', `?category_id=eq.${id}`, 'DELETE');
+          await sbFetch('categories', `?id=eq.${id}`, 'DELETE');
+          loadCategoriesList();
+          loadProducts();
+        }
+      );
+    }
+
+    // ====== SETTINGS ======
+    async function loadWholesalePassword() {
+      const data = await sbFetch('settings', `?key=eq.wholesale_password&select=value`);
+      if (data?.length) {
+        document.getElementById('wholesale-pass-input').value = data[0].value;
+      }
+    }
+
+    async function saveWholesalePassword() {
+      const pass = document.getElementById('wholesale-pass-input').value.trim();
+      const msgEl = document.getElementById('settings-msg');
+      if (!pass) {
+        msgEl.textContent = 'أدخل كلمة السر!';
+        msgEl.className = 'mt-3 text-sm font-bold text-red-500';
+        msgEl.classList.remove('hidden');
+        return;
+      }
+      await sbFetch('settings', `?key=eq.wholesale_password`, 'PATCH', { value: pass });
+      msgEl.textContent = '✅ تم حفظ كلمة السر بنجاح';
+      msgEl.className = 'mt-3 text-sm font-bold text-green-600';
+      msgEl.classList.remove('hidden');
+      setTimeout(() => msgEl.classList.add('hidden'), 3000);
     }
   </script>
 </body>
