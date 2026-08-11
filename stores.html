@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>أين تجد منتجاتنا - TOP TECH</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Cairo', sans-serif; }
+    body { background: #f8fafc; }
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(59,130,246,0.15);
+    }
+    .fade-in { animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="index.html" class="text-sm font-bold text-gray-500 hover:text-blue-600 transition flex items-center gap-1">
+        → رجوع للمتجر
+      </a>
+      <h1 class="text-xl font-black gradient-text">TOP TECH</h1>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="bg-gradient-to-l from-blue-600 to-cyan-500 text-white py-10 px-4 text-center">
+    <h2 class="text-2xl md:text-4xl font-black mb-2">📍 أين تجد منتجاتنا</h2>
+    <p class="text-blue-100 text-sm md:text-base">تفضل بزيارة أقرب محل من محلاتنا الموزّعة</p>
+  </section>
+
+  <!-- STORES -->
+  <section class="max-w-7xl mx-auto px-4 py-10">
+    <div id="stores-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <div id="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <div id="empty" class="hidden text-center py-20 text-gray-400">
+      <p class="text-5xl mb-3">🏬</p>
+      <p>لا توجد محلات مضافة حالياً</p>
+    </div>
+  </section>
+
+  <script>
+    // =============================================
+    // ✏️ ضع بياناتك هنا
+    // =============================================
+    const SUPABASE_URL = 'https://pftmpwocntzcxbinfygb.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_9btoyEEdz-9VtafZjFBBnw_MjOiYNRG';
+    // =============================================
+
+    async function supabase(table, query = '') {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      return res.json();
+    }
+
+    function showSkeleton() {
+      const loading = document.getElementById('loading');
+      loading.classList.remove('hidden');
+      loading.innerHTML = Array(6).fill(`
+        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+          <div class="skeleton w-full h-44"></div>
+          <div class="p-4 space-y-2">
+            <div class="skeleton h-5 w-2/3 rounded"></div>
+            <div class="skeleton h-4 w-1/2 rounded"></div>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderStores(stores) {
+      const grid = document.getElementById('stores-grid');
+      grid.innerHTML = stores.map(s => `
+        <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 fade-in">
+          <img src="${s.image_url || 'https://via.placeholder.com/400x250?text=🏬'}" alt="${s.name}" class="w-full h-44 object-cover" />
+          <div class="p-4">
+            <h4 class="font-black text-gray-800 text-lg mb-1">${s.name}</h4>
+            ${s.address ? `<p class="text-gray-500 text-sm flex items-start gap-1 mb-1">📍 <span>${s.address}</span></p>` : ''}
+            ${s.notes ? `<p class="text-gray-400 text-xs mt-2 leading-relaxed">${s.notes}</p>` : ''}
+          </div>
+        </div>`).join('');
+    }
+
+    async function loadStores() {
+      showSkeleton();
+      const stores = await supabase('stores', '?is_active=eq.true&order=sort_order.asc,name.asc') || [];
+      document.getElementById('loading').classList.add('hidden');
+      if (!stores.length) {
+        document.getElementById('empty').classList.remove('hidden');
+        return;
+      }
+      renderStores(stores);
+    }
+
+    loadStores();
+  </script>
+</body>
+</html>
